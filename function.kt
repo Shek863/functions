@@ -86,5 +86,34 @@ class Functions {
         }
 
     }
+    
+    
+    
+    
+    /**
+    * a metre sous forme de fonction plutart
+    **/
+    val connectivityManager = this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        connectivityManager.let {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                it.registerDefaultNetworkCallback(@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+                object : ConnectivityManager.NetworkCallback() {
+                    override fun onAvailable(network: Network) {
+                        //take action when network connection is gained
+                        runOnUiThread{
+                            networkV.visibility = View.GONE
+                        }
+                    }
+
+                    override fun onLost(network: Network) {
+                        //take action when network connection is lost
+                        runOnUiThread{
+                            networkV.visibility = View.VISIBLE
+                        }
+                    }
+                })
+            }
+        }
+    
 
 }
