@@ -1,3 +1,4 @@
+package co.opensi.kkiapay_pos.utils
 
 import android.content.Context
 import android.net.ConnectivityManager
@@ -13,96 +14,20 @@ import org.json.CDL
 import java.io.*
 import java.lang.Exception
 
-/*************************************************************/
-
-@Deprecated("We get old methode here")
-class Functions {
-
-    fun getCountry(countryCode : String, context: Context): String{
-        var countryName = ""
-
-        var json: String? = null
-        try {
-            val mJson: InputStream = context.assets.open("data/country.json")
-            val size = mJson.available()
-            val buffer = ByteArray(size)
-            mJson.read(buffer)
-            mJson.close()
-            json = String(buffer, StandardCharsets.UTF_8)
-        } catch (ex: IOException) {
-            ex.printStackTrace()
-        }
-
-        val type = object : TypeToken<List<Country>>() {}.type
-        val data: List<Country> =  Gson().fromJson(json, type)
-
-        for (i in data){
-            if (i.code == countryCode)
-            {
-                countryName = i.name
-            }
-        }
-
-        return  countryName
-    }
-
-    fun getDate(value: String): String {
-        val lString: List<String> = value.split("-","T")
-        return lString[0] + "/" + lString[1] + "/" + lString[2]
-    }
-
-    fun getHour(value: String): String {
-        val lString: List<String> = value.split("T", ":")
-        val hour = Integer.parseInt(lString[1]) + 1 // lock GMT
-        return hour.toString() + ":" + lString[2] }
-
-    fun saveCsv(jsonArrayString: String,size: String): Boolean{
-
-        val folder = File("/storage/emulated/0/Kkiapay/", "documents")
-        if (!folder.exists()) folder.mkdirs()
-        val file = File(folder, "Transactions$size.csv")
-
-        val output: JSONObject
-        try {
-            output = JSONObject(jsonArrayString)
-            val docs = output.getJSONArray("data")
-            val csv = CDL.toString(docs)
-            val writer = FileWriter(file)
-            writer.append(csv)
-            writer.flush()
-            writer.close()
-
-            //FileUtils.writeStringToFile(file, csv)
-            Log.e("CSV","Data has been Successfully Written to $file")
-            Log.e("CSV",csv)
-
-            return true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Log.e("CSV","catch",e)
-            return false
-        }
-
-    }
-
-}
-
-
-
-/***************************************************** Function Collection V 0.9.0 ******************************************************/
-/******************************************************** updated at 11/10/2021 ******************************************************/
+/***************************************************** Function Collection V 0.9.1 ******************************************************/
+/***************************************************** ** updated at 11/10/2021 ** ****************************************************/
 
 data class Country(
     var name : String,
     var code: String
 )
 
+const val DEFAULT_VALUE = "value"
 
 /********************** @TextFormatter **********************/
 
-
 /**
- * .[date] , @[TextFormatter]
+ * .[date] , @TextFormatter
  * function to format date for view
  * return "dd/mm/YYYY"
  */
@@ -113,7 +38,7 @@ fun String.date(): String {
 }
 
 /**
- * .[hour], @[TextFormatter]
+ * .[hour], @TextFormatter
  * function to format date for view
  * and move hour to GMT+1
  * return "hh:mm"
@@ -126,7 +51,7 @@ fun String.hour(): String {
 }
 
 /**
- * .[mountFcfa], @[TextFormatter]
+ * .[mountFcfa], @TextFormatter
  * return "Mount Fcfa"
  */
 @Override
@@ -179,17 +104,30 @@ fun List<Any>.getCountry(): String{
 }
 
 
-/********************** @[Asserter] **********************/
+/********************** @Asserter **********************/
 
 
 /**
- * [AssertNotNull]
+ * :@String
+ * [assertNotNull]
  * return "FullName"
  */
 @Override
 fun String.assertNotNull(): String {
-    return if (this==""||this==" "||this.isEmpty()) CLIENT_ANONYMIZE else this
+    return if (this==""||this==" "||this.isEmpty()) DEFAULT_VALUE else this
 }
+
+
+/**
+ * :@String
+ * [assertNotNull]
+ * return "FullName"
+ */
+@Override
+fun Any.assertNotNull(): Any {
+    return if (this==""||this==" "||this==null) DEFAULT_VALUE else this
+}
+
 
 /**
  * [AssertInteger]
@@ -249,13 +187,35 @@ fun saveFile(nameFile: String,input:InputStream): File {
 
 }
 
-/**
- * [saveCsv]
- */
-fun List<String>.saveCsv(): Boolean{
+fun getCountry(countryCode : String, context: Context): String{
+    var countryName = ""
 
-    val jsonArrayString: String = this[0]
-    val size: String = this[0]
+    var json: String? = null
+    try {
+        val mJson: InputStream = context.assets.open("data/country.json")
+        val size = mJson.available()
+        val buffer = ByteArray(size)
+        mJson.read(buffer)
+        mJson.close()
+        json = String(buffer, StandardCharsets.UTF_8)
+    } catch (ex: IOException) {
+        ex.printStackTrace()
+    }
+
+    val type = object : TypeToken<List<Country>>() {}.type
+    val data: List<Country> =  Gson().fromJson(json, type)
+
+    for (i in data){
+        if (i.code == countryCode)
+        {
+            countryName = i.name
+        }
+    }
+
+    return  countryName
+}
+
+fun saveCsv(jsonArrayString: String,size: String): Boolean{
 
     val folder = File("/storage/emulated/0/Kkiapay/", "documents")
     if (!folder.exists()) folder.mkdirs()
@@ -283,7 +243,6 @@ fun List<String>.saveCsv(): Boolean{
     }
 
 }
-
 
 /**********************  @Manager **********************/
 
@@ -326,5 +285,6 @@ fun Context.connectivityManager (onAvailable:(network: Network)->Unit , onLost:(
         }
     }
 }catch(e: Exception){}
+
 
 
